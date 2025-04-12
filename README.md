@@ -20,7 +20,7 @@ Does not matter what kind of query you provide as input to the evaluator, it wil
 | Integers | yes       | `[0-9]+`      |                                                                               |
 | Atoms    | yes       | `:[a-zA-Z_]+` | it works like enumerators                                                     |
 | String   | yes       | `'.*'`        | you can scape string with `\'`                                                |
-| Boolean  | yes       | `true|false`  |                                                                               |
+| Boolean  | yes       | `true\|false` |                                                                               |
 | Nil      | yes       | `nil`         | represents all kinds of empty values ("", nil) (zero is not considered empty) |
 | Floats   | no        | `\d+\.\d*`    | not yet                                                                       |
 
@@ -40,9 +40,9 @@ Does not matter what kind of query you provide as input to the evaluator, it wil
 | -------- | -------------------------------------------------------------------------------------------------- | ----------------------- |
 | eq       | check if `a` is equal to `b`. strict types. (Integers, Strings, Booleans, Nils, Floats, Atoms)     | `a eq b`                |
 | ne       | check if `a` is not equal to `b`. strict types. (Integers, Strings, Booleans, Nils, Floats, Atoms) | `a ne b`                |
-| lt       | check if `a` is smaller than `b`. strict types. (Integers, Strings)                                | `a lt b`                |
+| lt       | check if `a` is less than `b`. strict types. (Integers, Strings)                                   | `a lt b`                |
 | gt       | check if `a` is greater than `b`. strict types. (Integers, Strings)                                | `a gt b`                |
-| lte      | check if `a` is smaller than or equal to `b`. strict types. (Integers, Strings)                    | `a lte b`               |
+| lte      | check if `a` is less than or equal to `b`. strict types. (Integers, Strings)                       | `a lte b`               |
 | gte      | check if `a` is greater than or equal to `b`. strict types. (Integers, Strings)                    | `a gte b`               |
 | reg      | check if `a` matches pattern `b`. `b` accepts valid regex. `a` should be a string                  | `a reg b`               |
 
