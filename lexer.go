@@ -34,7 +34,7 @@ const (
 	tk_integer
 	tk_atom
 	tk_string
-	/* tk_float   token_kind_t = iota */
+	tk_float
 )
 
 var keywords = map[string]token_kind_t{
@@ -70,6 +70,10 @@ func (l lexer_t) isEmptyAhead() bool {
 }
 
 func (l lexer_t) char() byte {
+	if l.isEmpty() {
+		return '\000'
+	}
+
 	return l.content[l.cursor]
 }
 
@@ -103,11 +107,25 @@ func (l *lexer_t) lexNumber() {
 		l.forward()
 	}
 
-	// TODO: identify floats
+	isFloat := false
+
+	if l.char() == '.' {
+		isFloat = true
+
+		l.forward()
+
+		for !l.isEmpty() && isDigit(l.char()) {
+			l.forward()
+		}
+	}
 
 	token := token_t{
 		kind:  tk_integer,
 		value: l.content[l.bot:l.cursor],
+	}
+
+	if isFloat {
+		token.kind = tk_float
 	}
 
 	l.tokens = append(l.tokens, token)

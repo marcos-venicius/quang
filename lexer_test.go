@@ -24,7 +24,7 @@ func TestLexingParenthesis(t *testing.T) {
 	assert.Equal(t, "(", l.tokens[3].value)
 }
 
-func TestLexingNumbers(t *testing.T) {
+func TestLexingIntegers(t *testing.T) {
 	l := createLexer("0 124")
 
 	err := l.lex()
@@ -35,6 +35,21 @@ func TestLexingNumbers(t *testing.T) {
 	assert.Equal(t, tk_integer, l.tokens[1].kind)
 	assert.Equal(t, "0", l.tokens[0].value)
 	assert.Equal(t, "124", l.tokens[1].value)
+}
+
+func TestLexingFloats(t *testing.T) {
+	l := createLexer("0. 0.1 3.1415")
+
+	err := l.lex()
+
+	assert.Nil(t, err)
+	assert.Equal(t, 3, len(l.tokens))
+	assert.Equal(t, tk_float, l.tokens[0].kind)
+	assert.Equal(t, tk_float, l.tokens[1].kind)
+	assert.Equal(t, tk_float, l.tokens[2].kind)
+	assert.Equal(t, "0.", l.tokens[0].value)
+	assert.Equal(t, "0.1", l.tokens[1].value)
+	assert.Equal(t, "3.1415", l.tokens[2].value)
 }
 
 func TestLexingKeywords(t *testing.T) {
