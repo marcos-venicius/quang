@@ -9,6 +9,8 @@ just provide a simple and consise integrated language and let the user build the
 
 So, it is at the end a _"language as a lib"_.
 
+_There is a full [playlist on youtube](https://youtube.com/playlist?list=PL3YefAkg_zCgPTINetXJ7Aatpps2DECcW&si=_jBBPe7s6Ne4B70s) creating this project._
+
 ## Api and language details
 
 Does not matter what kind of query you provide as input to the evaluator, it will always return `true` or `false`. If the query is empty, it will always return `true`.
