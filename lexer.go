@@ -20,8 +20,6 @@ const (
 	tk_close_paren
 	tk_and_keyword
 	tk_or_keyword
-	tk_true_keyword
-	tk_false_keyword
 	tk_nil_keyword
 	tk_eq_keyword
 	tk_ne_keyword
@@ -30,11 +28,16 @@ const (
 	tk_gte_keyword
 	tk_lte_keyword
 	tk_reg_keyword
+
 	tk_symbol
+
 	tk_integer
 	tk_atom
 	tk_string
 	tk_float
+
+	tk_true_keyword
+	tk_false_keyword
 )
 
 var keywords = map[string]token_kind_t{
