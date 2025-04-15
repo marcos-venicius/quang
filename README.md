@@ -19,12 +19,12 @@ Does not matter what kind of query you provide as input to the evaluator, it wil
 
 | name     | supported | format        | description                                                                   |
 | -------- | --------- | ------------- | ----------------------------------------------------------------------------- |
-| Integers | yes       | `[0-9]+`      |                                                                               |
+| Integers | yes       | `[0-9]+`      | golang 64bit signed integers                                                  |
 | Atoms    | yes       | `:[a-zA-Z_]+` | it works like enumerators                                                     |
 | String   | yes       | `'.*'`        | you can scape string with `\'`                                                |
 | Boolean  | yes       | `true\|false` |                                                                               |
 | Nil      | yes       | `nil`         | represents all kinds of empty values ("", nil) (zero is not considered empty) |
-| Floats   | no        | `\d+\.\d*`    | not yet                                                                       |
+| Floats   | yes       | `\d+\.\d*`    | golang 64bit floats                                                           |
 
 **Keywords**
 
