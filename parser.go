@@ -256,7 +256,6 @@ func (p *parser_t) parseComparison() (*expression_t, error) {
 	current := p.token()
 
 	switch current.kind {
-
 	case tk_eq_keyword, tk_ne_keyword, tk_gt_keyword, tk_lt_keyword, tk_gte_keyword, tk_lte_keyword, tk_reg_keyword:
 		{
 			p.forward()
@@ -276,6 +275,8 @@ func (p *parser_t) parseComparison() (*expression_t, error) {
 				},
 			}, nil
 		}
+  case tk_or_keyword, tk_and_keyword:
+    return left, nil
 	}
 
 	return nil, fmt.Errorf("error: expected comparison operator after expression but got \"%s\"", current.value)
