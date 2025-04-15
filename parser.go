@@ -82,6 +82,18 @@ const (
 	dtype_nil
 )
 
+var ek_to_string = map[expression_kind_t]string{
+	ek_nil:         "nil",
+	ek_integer:     "integer",
+	ek_float:       "float",
+	ek_string:      "string",
+	ek_atom:        "atom",
+	ek_bool:        "bool",
+	ek_binary:      "binary",
+	ek_lazy_atom:   "lazy_atom",
+	ek_lazy_symbol: "lazy_symbol",
+}
+
 func lexerTokenKindToBinaryOperator(kind token_kind_t) binary_operator_t {
 	switch kind {
 	case tk_reg_keyword:
