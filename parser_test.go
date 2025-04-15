@@ -73,27 +73,27 @@ func TestParseExpression(t *testing.T) {
 	assert.NotNil(t, expr)
 	assert.Nil(t, err)
 
-  tests := []string{
-    "true or true",
-    "true or false",
-    "false or true",
-    "false or false",
-    "true and true",
-    "true and false",
-    "false and true",
-    "false and false",
-  }
+	tests := []string{
+		"true or true",
+		"true or false",
+		"false or true",
+		"false or false",
+		"true and true",
+		"true and false",
+		"false and true",
+		"false and false",
+	}
 
-  for _, test := range tests {
-    l := createLexer(test)
-    err := l.lex()
+	for _, test := range tests {
+		l := createLexer(test)
+		err := l.lex()
 
-    assert.Nil(t, err)
+		assert.Nil(t, err)
 
-    p := createParser(l.tokens)
-    expr, err := p.parseExpression()
+		p := createParser(l.tokens)
+		expr, err := p.parseExpression()
 
-    assert.NotNil(t, expr)
-    assert.Nil(t, err)
-  }
+		assert.NotNil(t, expr)
+		assert.Nil(t, err)
+	}
 }

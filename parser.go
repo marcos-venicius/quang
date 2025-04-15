@@ -1,5 +1,8 @@
 package quang
 
+// TODO: "expect" a token, if it's the wrong one, inform the user.
+// TODO: categorize errors like: syntax error, logical error, ...
+
 import (
 	"fmt"
 	"strconv"
@@ -275,8 +278,8 @@ func (p *parser_t) parseComparison() (*expression_t, error) {
 				},
 			}, nil
 		}
-  case tk_or_keyword, tk_and_keyword:
-    return left, nil
+	case tk_or_keyword, tk_and_keyword, tk_close_paren:
+		return left, nil
 	}
 
 	return nil, fmt.Errorf("error: expected comparison operator after expression but got \"%s\"", current.value)
