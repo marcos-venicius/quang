@@ -40,7 +40,9 @@ func TestEvaluatingBooleanExpressions(t *testing.T) {
 
 		assert.Nil(t, err)
 
-		result, err := evaluateExpression(expr)
+		e := createEvaluator(expr)
+
+		result, err := e.eval()
 
 		assert.Nil(t, err)
 		assert.Equal(t, expected, result)
@@ -93,7 +95,9 @@ func TestEvaluatingIntegerExpressions(t *testing.T) {
 
 		assert.Nil(t, err)
 
-		result, err := evaluateExpression(expr)
+		e := createEvaluator(expr)
+
+		result, err := e.eval()
 
 		assert.Nil(t, err)
 		assert.Equal(t, expected, result)
@@ -164,7 +168,9 @@ func TestEvaluatingFloatExpressions(t *testing.T) {
 
 		assert.Nil(t, err)
 
-		result, err := evaluateExpression(expr)
+		e := createEvaluator(expr)
+
+		result, err := e.eval()
 
 		assert.Nil(t, err)
 		assert.Equal(t, expected, result, "test: %s", test)
@@ -181,7 +187,9 @@ func TestEvaluatingFloatExpressions(t *testing.T) {
 
 		assert.Nil(t, err)
 
-		result, err := evaluateExpression(expr)
+		e := createEvaluator(expr)
+
+		result, err := e.eval()
 
 		assert.NotNil(t, err)
 		assert.Equal(t, test.err, err.Error())
@@ -213,9 +221,79 @@ func TestEvaluatingStringExpressions(t *testing.T) {
 
 		assert.Nil(t, err)
 
-		result, err := evaluateExpression(expr)
+		e := createEvaluator(expr)
+
+		result, err := e.eval()
 
 		assert.Nil(t, err)
 		assert.Equal(t, expected, result, "test: %s", test)
 	}
+}
+
+func TestEvaluatingLazySymbols(t *testing.T) {
+	test := "size gt 40"
+
+	l := createLexer(test)
+
+	assert.Nil(t, l.lex())
+
+	p := createParser(l.tokens)
+
+	expr, err := p.parseExpression()
+
+	assert.Nil(t, err)
+
+	e := createEvaluator(expr)
+
+	result, err := e.eval()
+
+	assert.NotNil(t, err)
+	assert.Equal(t, false, result)
+	assert.Equal(t, "error: the variable 'size' does not exist", err.Error())
+
+	e.addStringVar("size", "anything")
+
+	result, err = e.eval()
+
+	assert.NotNil(t, err)
+	assert.Equal(t, false, result)
+	assert.Equal(t, "you cannot do such operation 'string gt integer'", err.Error())
+
+	e.addIntegerVar("size", 41)
+
+	result, err = e.eval()
+
+	assert.Nil(t, err)
+	assert.Equal(t, true, result)
+
+	e.addIntegerVar("size", 38)
+
+	result, err = e.eval()
+
+	assert.Nil(t, err)
+	assert.Equal(t, false, result)
+}
+
+func TestEvaluatingLazySymbolsStrings(t *testing.T) {
+	test := "agent reg this"
+
+	l := createLexer(test)
+
+	assert.Nil(t, l.lex())
+
+	p := createParser(l.tokens)
+
+	expr, err := p.parseExpression()
+
+	assert.Nil(t, err)
+
+	e := createEvaluator(expr)
+
+	e.addStringVar("agent", "hello world")
+	e.addStringVar("this", "^\\w+\\s\\w+$")
+
+	result, err := e.eval()
+
+	assert.Nil(t, err)
+	assert.Equal(t, true, result)
 }

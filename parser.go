@@ -12,6 +12,8 @@ type expression_kind_t int
 type binary_operator_t int
 type data_type_t int
 type atom_t int8
+type integer_t int64
+type float_t float64
 
 type binary_expression_t struct {
 	operator binary_operator_t
@@ -25,8 +27,8 @@ type expression_t struct {
 	symbolName string
 
 	bool    bool
-	float   float64
-	integer int64
+	float   float_t
+	integer integer_t
 	atom    atom_t
 	string  string
 	binary  *binary_expression_t
@@ -36,8 +38,8 @@ type variable_t struct {
 	dtype data_type_t
 
 	bool    bool
-	float   float64
-	integer int64
+	float   float_t
+	integer integer_t
 	atom    atom_t
 	string  string
 }
@@ -81,6 +83,15 @@ const (
 	dtype_bool
 	dtype_nil
 )
+
+var dtype_to_string = map[data_type_t]string{
+	dtype_integer: "integer",
+	dtype_float:   "float",
+	dtype_string:  "string",
+	dtype_atom:    "atom",
+	dtype_bool:    "bool",
+	dtype_nil:     "nil",
+}
 
 var ek_to_string = map[expression_kind_t]string{
 	ek_nil:         "nil",
@@ -214,7 +225,7 @@ func (p *parser_t) parsePrimary() (*expression_t, error) {
 			return &expression_t{
 				kind:       ek_integer,
 				symbolName: "",
-				integer:    integer,
+				integer:    integer_t(integer),
 			}, nil
 		}
 	case tk_float:
@@ -228,7 +239,7 @@ func (p *parser_t) parsePrimary() (*expression_t, error) {
 			return &expression_t{
 				kind:       ek_float,
 				symbolName: "",
-				float:      float,
+				float:      float_t(float),
 			}, nil
 		}
 	case tk_true_keyword, tk_false_keyword:
