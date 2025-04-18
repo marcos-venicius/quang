@@ -94,6 +94,18 @@ var ek_to_string = map[expression_kind_t]string{
 	ek_lazy_symbol: "lazy_symbol",
 }
 
+var bo_to_string = map[binary_operator_t]string{
+	bo_eq:  "eq",
+	bo_ne:  "ne",
+	bo_gt:  "gt",
+	bo_lt:  "lt",
+	bo_gte: "gte",
+	bo_lte: "lte",
+	bo_reg: "reg",
+	bo_and: "and",
+	bo_or:  "or",
+}
+
 func lexerTokenKindToBinaryOperator(kind token_kind_t) binary_operator_t {
 	switch kind {
 	case tk_reg_keyword:
@@ -159,7 +171,7 @@ func unescapeString(s string) string {
 		i++
 	}
 
-	return string(bytes[:size+1])
+	return string(bytes[:size])
 }
 
 func createParser(tokens []token_t) parser_t {

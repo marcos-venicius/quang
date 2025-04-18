@@ -130,10 +130,77 @@ func TestEvaluatingFloatExpressions(t *testing.T) {
 		"(10. lte 11.)": true,
 		"11. lte 10.":   false,
 	}
-	// TODO: operator bellow should complaing about types
-	/* "reg"
-	"and"
-	"or" */
+
+	type test_case struct {
+		op     binary_operator_t
+		expr   string
+		err    string
+		result bool
+	}
+
+	fail_tests := []test_case{
+		{
+			op:     bo_reg,
+			expr:   "10. reg 'dsflksjdf'",
+			err:    "you cannot do such operation 'float reg string'",
+			result: false,
+		},
+		{
+			op:     bo_reg,
+			expr:   "'dsflksjdf' reg 10.",
+			err:    "you cannot do such operation 'string reg float'",
+			result: false,
+		},
+	}
+
+	for test, expected := range tests {
+		l := createLexer(test)
+
+		assert.Nil(t, l.lex())
+
+		p := createParser(l.tokens)
+
+		expr, err := p.parseExpression()
+
+		assert.Nil(t, err)
+
+		result, err := evaluateExpression(expr)
+
+		assert.Nil(t, err)
+		assert.Equal(t, expected, result, "test: %s", test)
+	}
+
+	for _, test := range fail_tests {
+		l := createLexer(test.expr)
+
+		assert.Nil(t, l.lex())
+
+		p := createParser(l.tokens)
+
+		expr, err := p.parseExpression()
+
+		assert.Nil(t, err)
+
+		result, err := evaluateExpression(expr)
+
+		assert.NotNil(t, err)
+		assert.Equal(t, test.err, err.Error())
+		assert.Equal(t, test.result, result, "test: %s", test)
+	}
+}
+
+func TestEvaluatingStringExpressions(t *testing.T) {
+	tests := map[string]bool{
+		"'hello world' eq 'hello world'":       true,
+		"'hello world ' eq 'hello world'":      false,
+		"'hello world ' ne 'hello world'":      true,
+		"'hello world' ne 'hello world'":       false,
+		"'hello \\'world' eq 'hello \\'world'": true,
+		"'z' gt 'a'":                           true,
+		"'a' lt 'z'":                           true,
+		"'a' eq 'a'":                           true,
+		"'/test/3e7f0bb3-d315-46ec-a92f-9bd694e5e281/fake' reg '^/test/[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}/fake$'": true,
+	}
 
 	for test, expected := range tests {
 		l := createLexer(test)
