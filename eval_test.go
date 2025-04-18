@@ -99,3 +99,56 @@ func TestEvaluatingIntegerExpressions(t *testing.T) {
 		assert.Equal(t, expected, result)
 	}
 }
+
+func TestEvaluatingFloatExpressions(t *testing.T) {
+	// TODO: add support for (<number>) syntax
+	tests := map[string]bool{
+		"1.5 eq 1.5":    true,
+		"1.5 eq 10.309": false,
+		"2. eq 1.9":     false,
+		"(1. eq 1.)":    true,
+		"((1. eq 1.0))": true,
+		"1. ne 1.0001":  true,
+		"1. ne 2.":      true,
+		"2. ne 1.":      true,
+		"10. gt 5.":     true,
+		"10. gt 15.":    false,
+		"15. gt 10.":    true,
+		"10. gt 10.":    false,
+
+		"10. lt 5.":  false,
+		"10. lt 15.": true,
+		"15. lt 10.": false,
+		"10. lt 10.": false,
+
+		"10. gte 10.": true,
+		"10. gte 11.": false,
+		"11. gte 10.": true,
+
+		"10. lte 10.":   true,
+		"10. lte 11.":   true,
+		"(10. lte 11.)": true,
+		"11. lte 10.":   false,
+	}
+	// TODO: operator bellow should complaing about types
+	/* "reg"
+	"and"
+	"or" */
+
+	for test, expected := range tests {
+		l := createLexer(test)
+
+		assert.Nil(t, l.lex())
+
+		p := createParser(l.tokens)
+
+		expr, err := p.parseExpression()
+
+		assert.Nil(t, err)
+
+		result, err := evaluateExpression(expr)
+
+		assert.Nil(t, err)
+		assert.Equal(t, expected, result, "test: %s", test)
+	}
+}
