@@ -3,16 +3,19 @@ package quang
 import (
 	"fmt"
 	"regexp"
+	"strings"
 )
 
 type evaluator_t struct {
 	symbols    map[string]variable_t
+	atoms      map[string]atom_t
 	expression *expression_t
 }
 
 func createEvaluator(expression *expression_t) evaluator_t {
 	return evaluator_t{
 		symbols:    make(map[string]variable_t),
+		atoms:      make(map[string]atom_t),
 		expression: expression,
 	}
 }
@@ -43,6 +46,24 @@ func (e *evaluator_t) addBoolVar(name string, value bool) {
 		dtype: dtype_bool,
 		bool:  value,
 	}
+}
+
+func (e *evaluator_t) addAtomVar(name string, value atom_t) {
+	e.symbols[name] = variable_t{
+		dtype: dtype_atom,
+		atom:  value,
+	}
+}
+
+func (e *evaluator_t) setAtomValue(name string, value atom_t) error {
+	// TODO: properly validate atoms name
+	if len(name) == 0 || name[0] != ':' || len(strings.TrimSpace(name[1:])) == 0 {
+		return fmt.Errorf("error: invalid atom name")
+	}
+
+	e.atoms[name] = value
+
+	return nil
 }
 
 func (e *evaluator_t) lazyEvalVar(expr *expression_t) (*expression_t, error) {
@@ -79,6 +100,17 @@ func (e *evaluator_t) lazyEvalVar(expr *expression_t) (*expression_t, error) {
 			}
 		} else {
 			return nil, fmt.Errorf("error: the variable '%s' does not exist", expr.symbolName)
+		}
+	}
+
+	if expr.kind == ek_lazy_atom {
+		if atom, ok := e.atoms[expr.symbolName]; ok {
+			return &expression_t{
+				kind: ek_atom,
+				atom: atom,
+			}, nil
+		} else {
+			return nil, fmt.Errorf("error: the atom '%s' does not exist", expr.symbolName)
 		}
 	}
 
@@ -122,7 +154,11 @@ func (e *evaluator_t) evaluateExpression(expr *expression_t) (bool, error) {
 						return cmpStringToString(left.string, op, right.string)
 					}
 
-					return false, fmt.Errorf("you cannot do such operation '%s %s %s'", ek_to_string[left.kind], bo_to_string[op], ek_to_string[right.kind])
+					if left.kind == ek_atom && right.kind == ek_atom {
+						return cmpAtomToAtom(left.atom, op, right.atom)
+					}
+
+					return false, fmt.Errorf("error: you cannot do such operation '%s %s %s'", ek_to_string[left.kind], bo_to_string[op], ek_to_string[right.kind])
 				}
 			case bo_or:
 				{
@@ -230,4 +266,15 @@ func cmpStringToString(left string, op binary_operator_t, right string) (bool, e
 	}
 
 	return false, fmt.Errorf("you cannot do such operation 'string %s string'", bo_to_string[op])
+}
+
+func cmpAtomToAtom(left atom_t, op binary_operator_t, right atom_t) (bool, error) {
+	switch op {
+	case bo_eq:
+		return left == right, nil
+	case bo_ne:
+		return left != right, nil
+	}
+
+	return false, fmt.Errorf("you cannot do such operation 'atom %s atom'", bo_to_string[op])
 }

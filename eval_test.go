@@ -146,13 +146,13 @@ func TestEvaluatingFloatExpressions(t *testing.T) {
 		{
 			op:     bo_reg,
 			expr:   "10. reg 'dsflksjdf'",
-			err:    "you cannot do such operation 'float reg string'",
+			err:    "error: you cannot do such operation 'float reg string'",
 			result: false,
 		},
 		{
 			op:     bo_reg,
 			expr:   "'dsflksjdf' reg 10.",
-			err:    "you cannot do such operation 'string reg float'",
+			err:    "error: you cannot do such operation 'string reg float'",
 			result: false,
 		},
 	}
@@ -257,7 +257,7 @@ func TestEvaluatingLazySymbols(t *testing.T) {
 
 	assert.NotNil(t, err)
 	assert.Equal(t, false, result)
-	assert.Equal(t, "you cannot do such operation 'string gt integer'", err.Error())
+	assert.Equal(t, "error: you cannot do such operation 'string gt integer'", err.Error())
 
 	e.addIntegerVar("size", 41)
 
@@ -293,6 +293,89 @@ func TestEvaluatingLazySymbolsStrings(t *testing.T) {
 	e.addStringVar("this", "^\\w+\\s\\w+$")
 
 	result, err := e.eval()
+
+	assert.Nil(t, err)
+	assert.Equal(t, true, result)
+}
+
+func TestEvaluatingLazyAtoms(t *testing.T) {
+	test := "method eq :get"
+
+	l := createLexer(test)
+
+	assert.Nil(t, l.lex())
+
+	p := createParser(l.tokens)
+
+	expr, err := p.parseExpression()
+
+	assert.Nil(t, err)
+
+	e := createEvaluator(expr)
+
+	result, err := e.eval()
+
+	assert.NotNil(t, err)
+	assert.Equal(t, false, result)
+	assert.Equal(t, "error: the variable 'method' does not exist", err.Error())
+
+	e.addAtomVar("method", 0)
+
+	result, err = e.eval()
+
+	assert.NotNil(t, err)
+	assert.Equal(t, false, result)
+	assert.Equal(t, "error: the atom ':get' does not exist", err.Error())
+
+	e.setAtomValue(":get", 1)
+
+	result, err = e.eval()
+
+	assert.Nil(t, err)
+	assert.Equal(t, false, result)
+
+	e.setAtomValue(":get", 0)
+
+	result, err = e.eval()
+
+	assert.Nil(t, err)
+	assert.Equal(t, true, result)
+
+	e.addStringVar("method", "get")
+
+	result, err = e.eval()
+
+	assert.NotNil(t, err)
+	assert.Equal(t, false, result)
+	assert.Equal(t, "error: you cannot do such operation 'string eq atom'", err.Error())
+}
+
+func TestEvaluatingLazyAtomsNeOperator(t *testing.T) {
+	test := "method ne :get"
+
+	l := createLexer(test)
+
+	assert.Nil(t, l.lex())
+
+	p := createParser(l.tokens)
+
+	expr, err := p.parseExpression()
+
+	assert.Nil(t, err)
+
+	e := createEvaluator(expr)
+
+	e.addAtomVar("method", 0)
+	e.setAtomValue(":get", 0)
+
+	result, err := e.eval()
+
+	assert.Nil(t, err)
+	assert.Equal(t, false, result)
+
+	e.setAtomValue(":get", 1)
+
+	result, err = e.eval()
 
 	assert.Nil(t, err)
 	assert.Equal(t, true, result)
