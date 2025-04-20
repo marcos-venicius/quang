@@ -1,5 +1,7 @@
 package quang
 
+// TODO: "expect" a token, if it's the wrong one, inform the user.
+// TODO: categorize errors like: syntax error, logical error, ...
 import (
 	"fmt"
 	"strconv"
@@ -7,8 +9,9 @@ import (
 
 type expression_kind_t int
 type binary_operator_t int
-type data_type_t int
-type atom_t int8
+type AtomType int8
+type IntegerType int64
+type FloatType float64
 
 type binary_expression_t struct {
 	operator binary_operator_t
@@ -22,21 +25,11 @@ type expression_t struct {
 	symbolName string
 
 	bool    bool
-	float   float64
-	integer int64
-	atom    atom_t
+	float   FloatType
+	integer IntegerType
+	atom    AtomType
 	string  string
 	binary  *binary_expression_t
-}
-
-type variable_t struct {
-	dtype data_type_t
-
-	bool    bool
-	float   float64
-	integer int64
-	atom    atom_t
-	string  string
 }
 
 type parser_t struct {
@@ -70,14 +63,29 @@ const (
 	bo_or
 )
 
-const (
-	dtype_integer data_type_t = iota
-	dtype_float
-	dtype_string
-	dtype_atom
-	dtype_bool
-	dtype_nil
-)
+var ek_to_string = map[expression_kind_t]string{
+	ek_nil:         "nil",
+	ek_integer:     "integer",
+	ek_float:       "float",
+	ek_string:      "string",
+	ek_atom:        "atom",
+	ek_bool:        "bool",
+	ek_binary:      "binary",
+	ek_lazy_atom:   "lazy_atom",
+	ek_lazy_symbol: "lazy_symbol",
+}
+
+var bo_to_string = map[binary_operator_t]string{
+	bo_eq:  "eq",
+	bo_ne:  "ne",
+	bo_gt:  "gt",
+	bo_lt:  "lt",
+	bo_gte: "gte",
+	bo_lte: "lte",
+	bo_reg: "reg",
+	bo_and: "and",
+	bo_or:  "or",
+}
 
 func lexerTokenKindToBinaryOperator(kind token_kind_t) binary_operator_t {
 	switch kind {
@@ -144,7 +152,7 @@ func unescapeString(s string) string {
 		i++
 	}
 
-	return string(bytes[:size+1])
+	return string(bytes[:size])
 }
 
 func createParser(tokens []token_t) parser_t {
@@ -187,7 +195,7 @@ func (p *parser_t) parsePrimary() (*expression_t, error) {
 			return &expression_t{
 				kind:       ek_integer,
 				symbolName: "",
-				integer:    integer,
+				integer:    IntegerType(integer),
 			}, nil
 		}
 	case tk_float:
@@ -201,7 +209,7 @@ func (p *parser_t) parsePrimary() (*expression_t, error) {
 			return &expression_t{
 				kind:       ek_float,
 				symbolName: "",
-				float:      float,
+				float:      FloatType(float),
 			}, nil
 		}
 	case tk_true_keyword, tk_false_keyword:
@@ -256,7 +264,6 @@ func (p *parser_t) parseComparison() (*expression_t, error) {
 	current := p.token()
 
 	switch current.kind {
-
 	case tk_eq_keyword, tk_ne_keyword, tk_gt_keyword, tk_lt_keyword, tk_gte_keyword, tk_lte_keyword, tk_reg_keyword:
 		{
 			p.forward()
@@ -276,6 +283,8 @@ func (p *parser_t) parseComparison() (*expression_t, error) {
 				},
 			}, nil
 		}
+	case tk_or_keyword, tk_and_keyword, tk_close_paren:
+		return left, nil
 	}
 
 	return nil, fmt.Errorf("error: expected comparison operator after expression but got \"%s\"", current.value)

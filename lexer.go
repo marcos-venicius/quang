@@ -185,7 +185,7 @@ func (l *lexer_t) lexString() error {
 			}
 
 			switch l.charAhead() {
-			case '\'':
+			case '\'', '\\':
 				l.forward()
 			default:
 				return fmt.Errorf("error: invalid scape sequence at position %d", l.cursor+1)
