@@ -157,7 +157,7 @@ func (e *evaluator_t) lazyEvalVar(expr *expression_t) (*expression_t, error) {
 // TODO: eval expressions between float|integer and float|integer
 func (e *evaluator_t) evaluateExpression(expr *expression_t) (bool, error) {
 	if expr == nil {
-		return false, nil
+		return true, nil
 	}
 
 	switch expr.kind {
