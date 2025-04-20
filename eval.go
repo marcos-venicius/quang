@@ -3,19 +3,47 @@ package quang
 import (
 	"fmt"
 	"regexp"
-	"strings"
 )
+
+type data_type_t int
+type variable_t struct {
+	dtype data_type_t
+
+	bool    bool
+	float   FloatType
+	integer IntegerType
+	atom    AtomType
+	string  string
+}
 
 type evaluator_t struct {
 	symbols    map[string]variable_t
-	atoms      map[string]atom_t
+	atoms      map[string]AtomType
 	expression *expression_t
+}
+
+const (
+	dtype_integer data_type_t = iota
+	dtype_float
+	dtype_string
+	dtype_bool
+	dtype_atom
+	dtype_nil
+)
+
+var dtype_to_string = map[data_type_t]string{
+	dtype_integer: "integer",
+	dtype_float:   "float",
+	dtype_string:  "string",
+	dtype_bool:    "bool",
+	dtype_atom:    "atom",
+	dtype_nil:     "nil",
 }
 
 func createEvaluator(expression *expression_t) evaluator_t {
 	return evaluator_t{
 		symbols:    make(map[string]variable_t),
-		atoms:      make(map[string]atom_t),
+		atoms:      make(map[string]AtomType),
 		expression: expression,
 	}
 }
@@ -27,14 +55,14 @@ func (e *evaluator_t) addStringVar(name, value string) {
 	}
 }
 
-func (e *evaluator_t) addIntegerVar(name string, value integer_t) {
+func (e *evaluator_t) addIntegerVar(name string, value IntegerType) {
 	e.symbols[name] = variable_t{
 		dtype:   dtype_integer,
 		integer: value,
 	}
 }
 
-func (e *evaluator_t) addFloatVar(name string, value float_t) {
+func (e *evaluator_t) addFloatVar(name string, value FloatType) {
 	e.symbols[name] = variable_t{
 		dtype: dtype_float,
 		float: value,
@@ -48,20 +76,29 @@ func (e *evaluator_t) addBoolVar(name string, value bool) {
 	}
 }
 
-func (e *evaluator_t) addAtomVar(name string, value atom_t) {
+func (e *evaluator_t) addAtomVar(name string, value AtomType) {
 	e.symbols[name] = variable_t{
 		dtype: dtype_atom,
 		atom:  value,
 	}
 }
 
-func (e *evaluator_t) setAtomValue(name string, value atom_t) error {
-	// TODO: properly validate atoms name
-	if len(name) == 0 || name[0] != ':' || len(strings.TrimSpace(name[1:])) == 0 {
+func (e *evaluator_t) setAtomValue(name string, value AtomType) error {
+	l := createLexer(name)
+
+	if err := l.lex(); err != nil {
+		return err
+	}
+
+	if len(l.tokens) == 0 {
+		return fmt.Errorf("error: missing atom name")
+	}
+
+	if l.tokens[0].kind != tk_atom {
 		return fmt.Errorf("error: invalid atom name")
 	}
 
-	e.atoms[name] = value
+	e.atoms[l.tokens[0].value] = value
 
 	return nil
 }
@@ -207,7 +244,7 @@ func (e *evaluator_t) eval() (bool, error) {
 	return e.evaluateExpression(e.expression)
 }
 
-func cmpIntegerToInteger(left integer_t, op binary_operator_t, right integer_t) (bool, error) {
+func cmpIntegerToInteger(left IntegerType, op binary_operator_t, right IntegerType) (bool, error) {
 	switch op {
 	case bo_eq:
 		return left == right, nil
@@ -226,7 +263,7 @@ func cmpIntegerToInteger(left integer_t, op binary_operator_t, right integer_t) 
 	return false, fmt.Errorf("you cannot do such operation 'integer %s integer'", bo_to_string[op])
 }
 
-func cmpFloatToFloat(left float_t, op binary_operator_t, right float_t) (bool, error) {
+func cmpFloatToFloat(left FloatType, op binary_operator_t, right FloatType) (bool, error) {
 	switch op {
 	case bo_eq:
 		return left == right, nil
@@ -268,7 +305,7 @@ func cmpStringToString(left string, op binary_operator_t, right string) (bool, e
 	return false, fmt.Errorf("you cannot do such operation 'string %s string'", bo_to_string[op])
 }
 
-func cmpAtomToAtom(left atom_t, op binary_operator_t, right atom_t) (bool, error) {
+func cmpAtomToAtom(left AtomType, op binary_operator_t, right AtomType) (bool, error) {
 	switch op {
 	case bo_eq:
 		return left == right, nil

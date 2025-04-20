@@ -2,7 +2,6 @@ package quang
 
 // TODO: "expect" a token, if it's the wrong one, inform the user.
 // TODO: categorize errors like: syntax error, logical error, ...
-
 import (
 	"fmt"
 	"strconv"
@@ -10,10 +9,9 @@ import (
 
 type expression_kind_t int
 type binary_operator_t int
-type data_type_t int
-type atom_t int8
-type integer_t int64
-type float_t float64
+type AtomType int8
+type IntegerType int64
+type FloatType float64
 
 type binary_expression_t struct {
 	operator binary_operator_t
@@ -27,21 +25,11 @@ type expression_t struct {
 	symbolName string
 
 	bool    bool
-	float   float_t
-	integer integer_t
-	atom    atom_t
+	float   FloatType
+	integer IntegerType
+	atom    AtomType
 	string  string
 	binary  *binary_expression_t
-}
-
-type variable_t struct {
-	dtype data_type_t
-
-	bool    bool
-	float   float_t
-	integer integer_t
-	atom    atom_t
-	string  string
 }
 
 type parser_t struct {
@@ -74,24 +62,6 @@ const (
 	bo_and
 	bo_or
 )
-
-const (
-	dtype_integer data_type_t = iota
-	dtype_float
-	dtype_string
-	dtype_atom
-	dtype_bool
-	dtype_nil
-)
-
-var dtype_to_string = map[data_type_t]string{
-	dtype_integer: "integer",
-	dtype_float:   "float",
-	dtype_string:  "string",
-	dtype_atom:    "atom",
-	dtype_bool:    "bool",
-	dtype_nil:     "nil",
-}
 
 var ek_to_string = map[expression_kind_t]string{
 	ek_nil:         "nil",
@@ -225,7 +195,7 @@ func (p *parser_t) parsePrimary() (*expression_t, error) {
 			return &expression_t{
 				kind:       ek_integer,
 				symbolName: "",
-				integer:    integer_t(integer),
+				integer:    IntegerType(integer),
 			}, nil
 		}
 	case tk_float:
@@ -239,7 +209,7 @@ func (p *parser_t) parsePrimary() (*expression_t, error) {
 			return &expression_t{
 				kind:       ek_float,
 				symbolName: "",
-				float:      float_t(float),
+				float:      FloatType(float),
 			}, nil
 		}
 	case tk_true_keyword, tk_false_keyword:
